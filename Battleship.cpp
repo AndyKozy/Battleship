@@ -21,6 +21,7 @@ int Battleship(int size)
 {
 	static int boardSize = 0;
 	boardSize = size;
+	std::string input;
 	//roll, pitch, yaw
 	int shotx, shoty, shotz; 
 	int move = 1;
@@ -28,11 +29,16 @@ int Battleship(int size)
 	//std::cin >> boardSize;
 	
 	std::vector<int> board (pow(boardSize,3),0);
+	std::cout << "Board size is: "
+		<< boardSize << "x"
+		<< boardSize << "x"
+		<< boardSize << std::endl;
 
 
 	while (0 == 0)
 	{
-		std::cout << "Where would you (" << move << ") like to shoot: ";
+		//A switch statement, cuz I know you don't like 'em >:D
+		std::cout << "Where would you (" << move << ") like to shoot: [x y z] ";
 		switch (move)
 		{
 		case 1:
@@ -43,10 +49,12 @@ int Battleship(int size)
 			break;
 		}
 
-		std::cin >> shotx;
-		std::cin >> shoty;
-		std::cin >> shotz;
-		board[shotz + shoty * boardSize + shotx * boardSize * boardSize] = -2;
+		//Andrew, needs some tweaking but this is the general implementation
+		//only reads with a ' ' (space) delimiter...
+		getline(std::cin, input);
+		std::stringstream sstream(input);
+		sstream >> shotx >> shoty >> shotz;
+		board[shotz + shoty * boardSize + shotx * pow(boardSize,2)] = -2;
 		PrintBoard(board, boardSize);
 	}
 }
