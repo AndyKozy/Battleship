@@ -16,40 +16,38 @@ void PrintBoard(const std::vector<int>& board, int boardSize)
 	}
 }
 
-int Battleship()
-{
-	int boardSize = 0;
-	int shotx, shoty, shotz;
-	int move = 1;
-	std::cout << "Desired Board Size: ";
-	std::cin >> boardSize;
-	
-	std::vector<int> board (boardSize*boardSize*boardSize,0);
 
+int Battleship(int size)
+{
+	static int boardSize = 0;
+	boardSize = size;
+	//roll, pitch, yaw
+	int shotx, shoty, shotz; 
+	int move = 1;
+	//std::cout << "Desired Board Size: ";
+	//std::cin >> boardSize;
 	
+	std::vector<int> board (pow(boardSize,3),0);
+
 
 	while (0 == 0)
 	{
-		if (move == 1)
+		std::cout << "Where would you (" << move << ") like to shoot: ";
+		switch (move)
 		{
-			std::cout << "Where would you (1) like to shoot: ";
-			std::cin >> shotx;
-			std::cin >> shoty;
-			std::cin >> shotz;
-			board[shotz + shoty * boardSize + shotx * boardSize * boardSize] = -2;
-			PrintBoard(board, boardSize);
-			move = 2;
+		case 1:
+			move++;
+			break;
+		case 2:
+			move--;
+			break;
 		}
-		if (move == 2)
-		{
-			std::cout << "Where would you (2) like to shoot: ";
-			std::cin >> shotx;
-			std::cin >> shoty;
-			std::cin >> shotz;
-			board[shotz + shoty * boardSize + shotx * boardSize * boardSize] = -2;
-			PrintBoard(board, boardSize);
-			move = 1;
-		}
+
+		std::cin >> shotx;
+		std::cin >> shoty;
+		std::cin >> shotz;
+		board[shotz + shoty * boardSize + shotx * boardSize * boardSize] = -2;
+		PrintBoard(board, boardSize);
 	}
 }
 
