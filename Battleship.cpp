@@ -36,8 +36,8 @@ void Battleship(int size)
 
 	BoardTYPE board (pow(boardSize, 2)*DEPTH,0); //1D array as 3D space
 	BoardTYPE board2(pow(boardSize, 2) * DEPTH, 0); //temp
-	//board[16] = 1;
-	//board2[15] = 1;
+	board[16] = 1;
+	board2[15] = 1;
 
 	std::cout << "Board size is: ";
 	for (int i = 0; i < 2; ++i)
@@ -47,12 +47,18 @@ void Battleship(int size)
 
 	//PlacePieces(board, boardSize, inventory, totalPieces);
 	
-
 	while (0 == 0)
 	{
-		PrintBoard(board, boardSize);
-		PrintBoard(board2, boardSize);
-
+		switch (move)
+		{
+		case 1:
+			PrintBoard(board, boardSize);
+			break;
+		case 2:
+			PrintBoard(board2, boardSize);
+			break;
+		}
+		
 		gameState = checkWin(board, board2);
 		if (gameState == 1)
 		{
@@ -81,6 +87,7 @@ void Battleship(int size)
 			else
 				std::cout << "Miss, loser.\n";
 			move++;
+			system("pause");
 			break;
 		case 2:
 			if (shootPiece(board2, board))
@@ -88,6 +95,7 @@ void Battleship(int size)
 			else
 				std::cout << "Miss, loser.\n";
 			move--;
+			system("pause");
 			break;
 		}
 
@@ -105,6 +113,7 @@ void Battleship(int size)
 
 void PrintBoard(const std::vector<int>& board, int boardSize)
 {
+	system("cls");
 	//Maybe use iterators?
 	for (size_t z = 0; z < DEPTH; z++)
 	{
@@ -235,7 +244,17 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 bool shootPiece(BoardTYPE& playerBoard, BoardTYPE& enemyBoard) {
 	size_t x, y, z;
 	bool ifShot = 0;
-	std::tie(x, y, z) = getIntCoord();
+	while (true)
+	{
+		std::tie(x, y, z) = getIntCoord();
+		if (playerBoard[x + boardSize * y + pow(boardSize, 2) * z] != 1 && playerBoard[x + boardSize * y + pow(boardSize, 2) * z] != 0)
+		{
+			std::cout << "Shot already made. Enter new shot: ";
+		}
+		else
+			break;
+	}
+	
 
 	if (playerBoard[x + boardSize * y + pow(boardSize, 2) * z] == 1)
 	{
