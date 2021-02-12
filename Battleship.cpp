@@ -9,7 +9,7 @@ void Battleship(int size)
 	//Is currently being used by Player 1
 	//Maybe use copy constructor to make one for each player?
 	//key --> gamePiece(name|length) & quantity
-	PcsMAPTYPE inventory{	{"carrier",		{"Carrier",		5,	0}},
+	PcsMAPTYPE inventory{	{"carrier",		{"Carrier",		5,	1}},
 							{"battleship",	{"Battleship",	4,	0}},
 							{"destroyer",	{"Destroyer",	3,	0}},
 							{"submarine",	{"Submarine",	3,	0}},
@@ -45,7 +45,7 @@ void Battleship(int size)
 	std::cout << DEPTH << std::endl;
 	system("pause"); //REMOVE IF GRAPHICS EVER GET IMPLEMENTED
 
-	//PlacePieces(board, boardSize, inventory, totalPieces);
+	PlacePieces(board, boardSize, inventory, totalPieces);
 	
 	while (0 == 0)
 	{
@@ -165,7 +165,7 @@ std::tuple<int,int,int> getIntCoord()
 	return std::make_tuple(x, y, z);
 }
 
-/*
+
 void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int totPieces)
 {
 	//cout formatting stuff
@@ -238,7 +238,7 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 		system("pause"); //REMOVE LATER FOR GRAPHICS/PROPER GAME LOOP
 	}
 }
-*/
+
 
 bool shootPiece(BoardTYPE& playerBoard, BoardTYPE& enemyBoard) {
 	size_t x, y, z;
