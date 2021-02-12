@@ -16,10 +16,11 @@ struct gamePiece
 {
 	const std::string name;
 	const int length;
+	int pieceAmount;
 };
 
 using PcKEYTYPE = std::string;
-using PcELEMTYPE = std::pair<gamePiece, int>; //piece w/ quantity
+using PcELEMTYPE = gamePiece; //piece w/ quantity
 using PcsMAPTYPE = std::map<PcKEYTYPE, PcELEMTYPE>;
 using BoardTYPE = std::vector<int>;
 

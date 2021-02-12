@@ -9,17 +9,17 @@ int Battleship(int size)
 	//Is currently being used by Player 1
 	//Maybe use copy constructor to make one for each player?
 	//key --> gamePiece(name|length) & quantity
-	PcsMAPTYPE inventory{ {"carrier",		{{"Carrier",5},		1}},
-							{"battleship",	{{"Battleship",4},	2}},
-							{"destroyer",	{{"Destroyer",3},	2}},
-							{"submarine",	{{"Submarine",3},	1}},
-							{"patrolboat",	{{"Patrol Boat",2},	4}} };
+	PcsMAPTYPE inventory{	{"carrier",		{"Carrier",		5,	1}},
+							{"battleship",	{"Battleship",	4,	2}},
+							{"destroyer",	{"Destroyer",	3,	2}},
+							{"submarine",	{"Submarine",	3,	1}},
+							{"patrolboat",	{"Patrol Boat",	2,	4}}};
 
 	//Don't know if this will be used outside of	 PlacePieces()
 	//if not used for Battleship(), move these 3 lines to ^^^^
 	int totalPieces = 0;
 	for (const auto& [key, item] : inventory)
-		totalPieces += item.second;
+		totalPieces += item.pieceAmount;
 	//std::cout << totalPieces;
 
 	boardSize = size; //used for Catch2
@@ -137,19 +137,20 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 		for (const auto& [name, piece] : inv)
 		{
 			//format a table output	//FIX ME
-			std::cout << std::left << std::setw(nameWid) << name << " {" << piece.second << "} | ";
+			std::cout << std::left << std::setw(nameWid) << name << " {" << piece.pieceAmount << "} | ";
 		}
 		std::cout << std::endl;
 
-		auto &itr = inv.find(getStrInput()); //grab the string input and search through the inventory
+		auto& itr = inv.find(getStrInput()); //grab the string input and search through the inventory
 		if (itr != inv.end())
 		{
 			//for readability's sake
-			auto &quantity =	itr->second.second; //quantity
-			auto &piece =		itr->second.first;  //gamePiece
+			auto &quantity =	itr->second.pieceAmount; //quantity
+			auto &piece =		itr->second.name;  //gamePiece
+			auto& pieceLength = itr->second.pieceAmount;
 			if (quantity > 0)
 			{
-				std::cout << "[SELECTION]: " << piece.name << " " << piece.length << "\n"
+				std::cout << "[SELECTION]: " << piece << " " << pieceLength << "\n"
 					<< "[REMAINING]: " << quantity << std::endl;
 				//TODO: prompt comfirmation of selected piece b4 asking where to place
 				std::cout << "Where would you like to place your ship? [x y z]: ";
