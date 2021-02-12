@@ -25,6 +25,8 @@ using BoardTYPE = std::vector<int>;
 
 std::string getStrInput();
 
+std::tuple<int, int, int> getIntCoord();
+
 void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int totPieces);
 
 void PrintBoard(const std::vector<int>&, int);
