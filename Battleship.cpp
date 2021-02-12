@@ -151,7 +151,8 @@ void PrintBoard(const BoardTYPE& board, int boardSize)
 			for (size_t x = 0; x < boardSize; x++)
 			{
 				//a switch within a switch statement, because why not? >:D //LMAO YOU THOUGHT YOU COULD SWITCH ME NONONO I MADE THE ENTIRE SWITCH STATEMENT 1 LINE MUAHAHAHAHAHAH
-				std::cout << "\\" << board[x + y * boardSize + z * pow(boardSize, 2)] <<' ';
+				//touché, but the spacing was off >:P
+				std::cout << "\\ " << board[x + y * boardSize + z * pow(boardSize, 2)] <<' ';
 			}
 			std::cout << "\\" << std::endl;
 			printShift+=3;
