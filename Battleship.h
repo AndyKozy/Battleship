@@ -32,4 +32,6 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 
 void PrintBoard(const std::vector<int>&, int);
 
+bool shootPiece(BoardTYPE& playerBoard, BoardTYPE& enemyBoard);
+
 int Battleship(int);

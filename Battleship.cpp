@@ -9,11 +9,11 @@ int Battleship(int size)
 	//Is currently being used by Player 1
 	//Maybe use copy constructor to make one for each player?
 	//key --> gamePiece(name|length) & quantity
-	PcsMAPTYPE inventory{	{"carrier",		{"Carrier",		5,	1}},
-							{"battleship",	{"Battleship",	4,	2}},
-							{"destroyer",	{"Destroyer",	3,	2}},
-							{"submarine",	{"Submarine",	3,	1}},
-							{"patrolboat",	{"Patrol Boat",	2,	4}}};
+	PcsMAPTYPE inventory{	{"carrier",		{"Carrier",		5,	0}},
+							{"battleship",	{"Battleship",	4,	0}},
+							{"destroyer",	{"Destroyer",	3,	0}},
+							{"submarine",	{"Submarine",	3,	0}},
+							{"patrolboat",	{"Patrol Boat",	2,	0}}};
 
 	//Don't know if this will be used outside of	 PlacePieces()
 	//if not used for Battleship(), move these 3 lines to ^^^^
@@ -25,15 +25,17 @@ int Battleship(int size)
 	boardSize = size; //used for Catch2
 	//std::string input; //was used for getting coords. Now handled by getIntCoords() (see below)
 
-	int shotX = 0, //left/right
-		shotY = 0, //forward/back
-		shotZ = 0; //up/down
+	size_t shotX = 0, //left/right
+		   shotY = 0, //forward/back
+		   shotZ = 0; //up/down
 	int move = 1;
 	//std::cout << "Desired Board Size: ";
 	//std::cin >> boardSize;
 	
 
 	BoardTYPE board (pow(boardSize,2)*DEPTH,0); //1D array as 3D space
+	BoardTYPE board2(pow(boardSize, 2) * DEPTH, 1); //temp
+
 	std::cout << "Board size is: ";
 	for (int i = 0; i < 2; ++i)
 		std::cout << boardSize << "x";
@@ -62,22 +64,28 @@ int Battleship(int size)
 		//std::stringstream sstream(input);
 		//sstream >> shotX >> shotY >> shotZ;
 		//TODO: Make a translation of battleship notation (A3, B6) to coordinates..?
-		std::tie(shotX, shotY, shotZ) = getIntCoord();
-		board[shotZ + shotY * DEPTH + shotX * boardSize * DEPTH] = -2;
+		//std::tie(shotX, shotY, shotZ) = getIntCoord();
+		//board[shotX + boardSize * shotY + pow(boardSize,2) * shotZ] = -2;
+		//board[shotZ + shotY * DEPTH + shotX * boardSize * DEPTH] = -2;
+		if (shootPiece(board, board2))
+			std::cout << "Hit!\n";
+		else
+			std::cout << "Miss, loser.\n";
 		PrintBoard(board, boardSize);
+		PrintBoard(board2, boardSize);
 	}
 }
 
 void PrintBoard(const std::vector<int>& board, int boardSize)
 {
 	//Maybe use iterators?
-	for (int z = 0; z < DEPTH; z++)
+	for (size_t z = 0; z < DEPTH; z++)
 	{
-		for (int y = 0; y < boardSize; y++)
+		for (size_t y = 0; y < boardSize; y++)
 		{
-			for (int x = 0; x < boardSize; x++)
+			for (size_t x = 0; x < boardSize; x++)
 			{
-				std::cout << board[z + y * DEPTH + x * boardSize * DEPTH] << " ";
+				std::cout << board[x + y * boardSize + z * boardSize * boardSize] << " ";
 			}
 			std::cout << std::endl;
 		}
@@ -107,12 +115,21 @@ std::tuple<int,int,int> getIntCoord()
 	//Andrew, needs some tweaking but this is the general implementation
 	//only reads with a ' ' (space) delimiter...
 	int x, y, z;
-	std::string temp = "";
-	std::getline(std::cin, temp);
-	std::stringstream sstream(temp);
-	sstream >> x >> y >> z;
+	do
+	{
+		std::string temp = "";
+		std::getline(std::cin, temp);
+		std::stringstream sstream(temp);
+		sstream >> x >> y >> z;
+		if (x >= boardSize || y >= boardSize || z >= DEPTH)
+			std::cout << "Invalid Coordinates. Enter new ones, dummy: " << std::endl;
+		else
+			break;
+	} while (true);
+
 	return std::make_tuple(x, y, z);
 }
+
 
 void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int totPieces)
 {
@@ -147,7 +164,7 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 			//for readability's sake
 			auto &quantity =	itr->second.pieceAmount; //quantity
 			auto &piece =		itr->second.name;  //gamePiece
-			auto& pieceLength = itr->second.pieceAmount;
+			auto &pieceLength = itr->second.length;
 			if (quantity > 0)
 			{
 				std::cout << "[SELECTION]: " << piece << " " << pieceLength << "\n"
@@ -162,14 +179,14 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 				//TODO: Check board if a user's piece overlaps the selection,
 				//		Restart coord placement prompt
 
-				/*SUGGESTION:
-				* Odd-sized pieces are centered corresponding to the placement coord, sorta a pivot
-				* A size 4 piece follows the same placement rules as a size 3 piece where,
-				* the non-overlapping tail-end ALWAYS points to the west/south.
-				* A size 2 piece is similar in that the tail-end will ALWAYS point to the west/south
-				* Pieces placed at the edges or corners will "bump back" this "pivot point" (plcmntCoord)
-				* so that the code won't break :')
-				*/
+				//SUGGESTION:
+				// Odd-sized pieces are centered corresponding to the placement coord, sorta a pivot
+				// A size 4 piece follows the same placement rules as a size 3 piece where,
+				// the non-overlapping tail-end ALWAYS points to the west/south.
+				// A size 2 piece is similar in that the tail-end will ALWAYS point to the west/south
+				// Pieces placed at the edges or corners will "bump back" this "pivot point" (plcmntCoord)
+				// so that the code won't break :')
+				//
 			}
 			else
 			{
@@ -185,6 +202,31 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 			std::cout << "Not a valid game piece. Try again." << std::endl;
 		system("pause"); //REMOVE LATER FOR GRAPHICS/PROPER GAME LOOP
 	}
+}
+
+bool shootPiece(BoardTYPE& playerBoard, BoardTYPE& enemyBoard) {
+	size_t x, y, z;
+	int ifShot = 0;
+	std::tie(x, y, z) = getIntCoord();
+
+	if (playerBoard[x + boardSize * y + pow(boardSize, 2) * z] == 1)
+	{
+		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = -2;
+		ifShot = 1;
+	}
+	else
+		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = -1;
+
+
+	if (enemyBoard[x + boardSize * y + pow(boardSize, 2) * z] == 1)
+	{
+		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = -2;
+		ifShot = 1;
+	}
+	enemyBoard[x + boardSize * y + pow(boardSize, 2) * z] = -3;
+
+
+	return ifShot;
 }
 
 /*
