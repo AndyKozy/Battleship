@@ -28,10 +28,12 @@ std::string getStrInput();
 
 std::tuple<int, int, int> getIntCoord();
 
-void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int totPieces);
+//void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int totPieces);
 
 void PrintBoard(const std::vector<int>&, int);
 
 bool shootPiece(BoardTYPE& playerBoard, BoardTYPE& enemyBoard);
 
-int Battleship(int);
+void Battleship(int);
+
+int checkWin(BoardTYPE& board, BoardTYPE& board1);
