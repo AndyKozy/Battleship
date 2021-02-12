@@ -283,7 +283,7 @@ int checkWin(BoardTYPE& board1, BoardTYPE& board2) {
 
 /*
 Board Positions:
- 1:Player 1 Ship
+ 1:Player Ship
  0:Empty Space
 -1:Miss
 -2:Hit
@@ -293,9 +293,10 @@ Board Positions:
 /*
 Order of making things:
 1.Board :D
-2.Shooting
-3.Placing Pieces
-4.Graphics
-5.Seperating
-6.Network
+2.Shooting :D
+3.Checking a win :D
+4.Placing Pieces
+5.Graphics
+6.Seperating
+7.Network
 */
