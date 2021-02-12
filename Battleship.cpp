@@ -10,16 +10,15 @@ void Battleship(int size)
 	//Maybe use copy constructor to make one for each player?
 	//key --> gamePiece(name|length) & quantity
 	PcsMAPTYPE inventory{	{"carrier",		{"Carrier",		5,	1}},
-							{"battleship",	{"Battleship",	4,	0}},
-							{"destroyer",	{"Destroyer",	3,	0}},
-							{"submarine",	{"Submarine",	3,	0}},
-							{"patrolboat",	{"Patrol Boat",	2,	0}}};
+							{"battleship",	{"Battleship",	4,	2}},
+							{"destroyer",	{"Destroyer",	3,	1}},
+							{"submarine",	{"Submarine",	3,	2}},
+							{"patrolboat",	{"Patrol Boat",	2,	4}}};
 
 	//Don't know if this will be used outside of	 PlacePieces()
 	//if not used for Battleship(), move these 3 lines to ^^^^
-	int totalPieces = 0;
-	for (const auto& [key, item] : inventory)
-		totalPieces += item.pieceAmount;
+	int totalPieces = 1;
+	//for (const auto& [key, item] : inventory) totalPieces += item.amount;
 	//std::cout << totalPieces;
 
 	boardSize = size; //used for Catch2
@@ -108,22 +107,85 @@ void Battleship(int size)
 		//board[shotZ + shotY * DEPTH + shotX * boardSize * DEPTH] = -2;
 
 	}
+	system("pause");
+
+}
+
+void diagShift(int pS)
+{
+	for (int s = 0; s < pS; ++s)
+		std::cout << " ";
+}
+void hBorder(int bS)
+{
+	for (int i = 0; i < bS; ++i)
+		std::cout << "+---";
+	std::cout << "+";
 }
 
 void PrintBoard(const std::vector<int>& board, int boardSize)
 {
 	system("cls");
-	//Maybe use iterators?
+
 	for (size_t z = 0; z < DEPTH; z++)
 	{
+		int printShift = 1;
+		char letter = 'A';
+
+		std::cout << "LAYER " << z << std::endl;
+		diagShift(printShift);
+		for (letter; letter < (boardSize+'A'); ++letter)
+			std::cout << "  " << letter << " ";
+		std::cout << "\n";
+
 		for (size_t y = 0; y < boardSize; y++)
 		{
+			//print stuff
+			diagShift(printShift);
+			hBorder(boardSize);
+			std::cout << "\n";
+			printShift--;
+			diagShift(printShift);
+			std::cout << y << " ";
+
 			for (size_t x = 0; x < boardSize; x++)
 			{
-				std::cout << board[x + y * boardSize + z * pow(boardSize,2)] << " ";
+				const auto &pos = board[x + y * boardSize + z * pow(boardSize, 2)];
+				std::cout << "\\ ";
+				//a switch within a switch statement, because why not? >:D
+				switch (pos)
+				{
+				case 0:
+					std::cout << " ";
+					break;
+				default:
+					switch (pos)
+					{
+					case 1:
+						std::cout << "#";
+						break;
+					case -1:
+						std::cout << "/";
+						break;
+					case -2:
+						std::cout << "X";
+						break;
+					case -3:
+						std::cout << "@";
+						break;
+					default:
+						std::cout << "Something went wrong, bruv.";
+						break;
+					}
+					break;
+				}
+				std::cout << " ";
 			}
-			std::cout << std::endl;
+			std::cout << "\\" << std::endl;
+			printShift+=3;
 		}
+		diagShift(printShift);
+		hBorder(boardSize);
 		std::cout << std::endl << std::endl;
 	}
 }
@@ -177,7 +239,7 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 	int xCoord = -1;
 	int yCoord = -1;
 	int zCoord = -1;
-	int piecesPlaced = 0;
+	int piecesPlaced = 100;
 
 	
 	while (piecesPlaced < totPieces)
@@ -189,21 +251,19 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 		for (const auto& [name, piece] : inv)
 		{
 			//format a table output	//FIX ME
-			std::cout << std::left << std::setw(nameWid) << name << " {" << piece.pieceAmount << "} | ";
+			std::cout << std::left << std::setw(nameWid) << name << " {" << piece.amount << "} | ";
 		}
 		std::cout << std::endl;
-
+		/*
 		auto& itr = inv.find(getStrInput()); //grab the string input and search through the inventory
 		if (itr != inv.end())
 		{
 			//for readability's sake
-			auto &quantity =	itr->second.pieceAmount; //quantity
-			auto &piece =		itr->second.name;  //gamePiece
-			auto &pieceLength = itr->second.length;
-			if (quantity > 0)
+			auto& piece = itr->second;
+			if (piece.amount > 0)
 			{
-				std::cout << "[SELECTION]: " << piece << " " << pieceLength << "\n"
-					<< "[REMAINING]: " << quantity << std::endl;
+				std::cout << "[SELECTION]: " << piece.name << " (size " << piece.length << ")\n"
+					<< "[REMAINING]: " << piece.amount << std::endl;
 				//TODO: prompt comfirmation of selected piece b4 asking where to place
 				std::cout << "Where would you like to place your ship? [x y z]: ";
 
@@ -230,12 +290,13 @@ void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int to
 				continue;
 			}
 			//if successful, reduce quantity and ++piecesPlaced
-			quantity--;
+			piece.amount--;
 			++piecesPlaced;
 		}
 		else
 			std::cout << "Not a valid game piece. Try again." << std::endl;
 		system("pause"); //REMOVE LATER FOR GRAPHICS/PROPER GAME LOOP
+		*/
 	}
 }
 
@@ -313,7 +374,7 @@ Order of making things:
 1.Board :D
 2.Shooting :D
 3.Checking a win :D
-4.Placing Pieces
+4.Placing Pieces D:
 5.Graphics
 6.Seperating
 7.Network
