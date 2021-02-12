@@ -33,10 +33,10 @@ void Battleship(int size)
 	//std::cin >> boardSize;
 	
 
-	BoardTYPE board (pow(boardSize, 2)*DEPTH,0); //1D array as 3D space
-	BoardTYPE board2(pow(boardSize, 2) * DEPTH, 0); //temp
-	board[16] = 1;
-	board2[15] = 1;
+	BoardTYPE board (pow(boardSize, 2)*DEPTH,' '); //1D array as 3D space
+	BoardTYPE board2(pow(boardSize, 2) * DEPTH,' '); //temp
+	board[16] = '#';
+	board2[15] = '#';
 
 	std::cout << "Board size is: ";
 	for (int i = 0; i < 2; ++i)
@@ -123,7 +123,7 @@ void hBorder(int bS)
 	std::cout << "+";
 }
 
-void PrintBoard(const std::vector<int>& board, int boardSize)
+void PrintBoard(const BoardTYPE& board, int boardSize)
 {
 	system("cls");
 
@@ -150,36 +150,8 @@ void PrintBoard(const std::vector<int>& board, int boardSize)
 
 			for (size_t x = 0; x < boardSize; x++)
 			{
-				const auto &pos = board[x + y * boardSize + z * pow(boardSize, 2)];
-				std::cout << "\\ ";
-				//a switch within a switch statement, because why not? >:D
-				switch (pos)
-				{
-				case 0:
-					std::cout << " ";
-					break;
-				default:
-					switch (pos)
-					{
-					case 1:
-						std::cout << "#";
-						break;
-					case -1:
-						std::cout << "/";
-						break;
-					case -2:
-						std::cout << "X";
-						break;
-					case -3:
-						std::cout << "@";
-						break;
-					default:
-						std::cout << "Something went wrong, bruv.";
-						break;
-					}
-					break;
-				}
-				std::cout << " ";
+				//a switch within a switch statement, because why not? >:D //LMAO YOU THOUGHT YOU COULD SWITCH ME NONONO I MADE THE ENTIRE SWITCH STATEMENT 1 LINE MUAHAHAHAHAHAH
+				std::cout << "\\" << board[x + y * boardSize + z * pow(boardSize, 2)] <<' ';
 			}
 			std::cout << "\\" << std::endl;
 			printShift+=3;
@@ -307,7 +279,7 @@ bool shootPiece(BoardTYPE& playerBoard, BoardTYPE& enemyBoard) {
 	while (true)
 	{
 		std::tie(x, y, z) = getIntCoord();
-		if (playerBoard[x + boardSize * y + pow(boardSize, 2) * z] != 1 && playerBoard[x + boardSize * y + pow(boardSize, 2) * z] != 0)
+		if (playerBoard[x + boardSize * y + pow(boardSize, 2) * z] != '#' && playerBoard[x + boardSize * y + pow(boardSize, 2) * z] != ' ')
 		{
 			std::cout << "Shot already made. Enter new shot: ";
 		}
@@ -316,21 +288,21 @@ bool shootPiece(BoardTYPE& playerBoard, BoardTYPE& enemyBoard) {
 	}
 	
 
-	if (playerBoard[x + boardSize * y + pow(boardSize, 2) * z] == 1)
+	if (playerBoard[x + boardSize * y + pow(boardSize, 2) * z] == '#')
 	{
-		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = -2;
+		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
 		ifShot = 1;
 	}
 	else
-		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = -1;
+		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = '_';
 
 
-	if (enemyBoard[x + boardSize * y + pow(boardSize, 2) * z] == 1)
+	if (enemyBoard[x + boardSize * y + pow(boardSize, 2) * z] == '#')
 	{
-		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = -2;
+		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
 		ifShot = 1;
 	}
-	enemyBoard[x + boardSize * y + pow(boardSize, 2) * z] = -3;
+	enemyBoard[x + boardSize * y + pow(boardSize, 2) * z] = '/';
 
 
 	return ifShot;
@@ -341,12 +313,12 @@ int checkWin(BoardTYPE& board1, BoardTYPE& board2) {
 	bool gameEnd2 = true;
 	for (auto& n : board1)
 	{
-		if (n == 1)
+		if (n == '#')
 			gameEnd1 = false;
 	}
 	for (auto& n : board2)
 	{
-		if (n == 1)
+		if (n == '#')
 			gameEnd2 = false;
 	}
 
