@@ -6,7 +6,6 @@
 #include <string>
 #include <map>
 #include <unordered_map>
-#include <array>
 
 #include <cmath>
 #include <algorithm>
@@ -16,7 +15,7 @@ struct gamePiece
 {
 	const std::string name;
 	const int length;
-	int pieceAmount;
+	int amount;
 };
 
 using PcKEYTYPE = std::string;
@@ -28,7 +27,7 @@ std::string getStrInput();
 
 std::tuple<int, int, int> getIntCoord();
 
-//void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int totPieces);
+void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int totPieces);
 
 void PrintBoard(const std::vector<int>&, int);
 
