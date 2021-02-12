@@ -59,23 +59,6 @@ void Battleship(int size)
 			break;
 		}
 		
-		gameState = checkWin(board, board2);
-		if (gameState == 1)
-		{
-			std::cout << "Player 1 wins!";
-			break;
-		}
-		if (gameState == 2)
-		{
-			std::cout << "Player 2 wins!";
-			break;
-		}
-		if (gameState == 3)
-		{
-			std::cout << "Tie!";
-			break;
-		}
-
 		//A switch statement, cuz I know you don't like 'em >:D
 		std::cout << "Player " << move << "\n";
 		std::cout << "Where would you (" << move << ") like to shoot: [x y z] ";
@@ -99,6 +82,22 @@ void Battleship(int size)
 			break;
 		}
 
+		gameState = checkWin(board, board2);
+		if (gameState == 1)
+		{
+			std::cout << "Player 1 wins!";
+			break;
+		}
+		if (gameState == 2)
+		{
+			std::cout << "Player 2 wins!";
+			break;
+		}
+		if (gameState == 3)
+		{
+			std::cout << "Tie!";
+			break;
+		}
 
 		//getline(std::cin, input);
 		//std::stringstream sstream(input);
