@@ -1,345 +1,12 @@
 #include "Battleship.h"
 
-///GLOBAL VARIABLES
-const int DEPTH = 3; //z axis
-static int boardSize = 0;
-
-void Battleship(int size)
-{
-	//Is currently being used by Player 1
-	//Maybe use copy constructor to make one for each player?
-	//key --> gamePiece(name|length) & quantity
-	PcsMAPTYPE inventory{	{"carrier",		{"Carrier",		5,	1}},
-							{"battleship",	{"Battleship",	4,	2}},
-							{"destroyer",	{"Destroyer",	3,	1}},
-							{"submarine",	{"Submarine",	3,	2}},
-							{"patrolboat",	{"Patrol Boat",	2,	4}}};
-
-	//Don't know if this will be used outside of	 PlacePieces()
-	//if not used for Battleship(), move these 3 lines to ^^^^
-	int totalPieces = 1;
-	//for (const auto& [key, item] : inventory) totalPieces += item.amount;
-	//std::cout << totalPieces;
-
-	boardSize = size; //used for Catch2
-	//std::string input; //was used for getting coords. Now handled by getIntCoords() (see below)
-
-	int shotX = 0, //left/right
-		shotY = 0, //forward/back
-		shotZ = 0; //up/down
-	int move = 1;
-	int gameState = 0;
-	//std::cout << "Desired Board Size: ";
-	//std::cin >> boardSize;
-	
-
-	BoardTYPE board (pow(boardSize, 2)*DEPTH,' '); //1D array as 3D space
-	BoardTYPE board2(pow(boardSize, 2) * DEPTH,' '); //temp
-	board[16] = '#';
-	board2[15] = '#';
-
-	std::cout << "Board size is: ";
-	for (int i = 0; i < 2; ++i)
-		std::cout << boardSize << "x";
-	std::cout << DEPTH << std::endl;
-	system("pause"); //REMOVE IF GRAPHICS EVER GET IMPLEMENTED
-
-	PlacePieces(board, boardSize, inventory, totalPieces);
-	
-	while (0 == 0)
-	{
-		switch (move)
-		{
-		case 1:
-			PrintBoard(board, boardSize);
-			break;
-		case 2:
-			PrintBoard(board2, boardSize);
-			break;
-		}
-		
-		//A switch statement, cuz I know you don't like 'em >:D
-		std::cout << "Player " << move << "\n";
-		std::cout << "Where would you (" << move << ") like to shoot: [x y z] ";
-		switch (move)
-		{
-		case 1:
-			if (shootPiece(board, board2))
-				std::cout << "Hit!\n";
-			else
-				std::cout << "Miss, loser.\n";
-			move++;
-			system("pause");
-			break;
-		case 2:
-			if (shootPiece(board2, board))
-				std::cout << "Hit!\n";
-			else
-				std::cout << "Miss, loser.\n";
-			move--;
-			system("pause");
-			break;
-		}
-
-		gameState = checkWin(board, board2);
-		if (gameState == 1)
-		{
-			std::cout << "Player 1 wins!";
-			break;
-		}
-		if (gameState == 2)
-		{
-			std::cout << "Player 2 wins!";
-			break;
-		}
-		if (gameState == 3)
-		{
-			std::cout << "Tie!";
-			break;
-		}
-
-		//getline(std::cin, input);
-		//std::stringstream sstream(input);
-		//sstream >> shotX >> shotY >> shotZ;
-		//TODO: Make a translation of battleship notation (A3, B6) to coordinates..?
-		//std::tie(shotX, shotY, shotZ) = getIntCoord();
-		//board[shotX + boardSize * shotY + pow(boardSize,2) * shotZ] = -2;
-		//board[shotZ + shotY * DEPTH + shotX * boardSize * DEPTH] = -2;
-
-	}
-	system("pause");
-
-}
-
-void diagShift(int pS)
-{
-	for (int s = 0; s < pS; ++s)
-		std::cout << " ";
-}
-void hBorder(int bS)
-{
-	for (int i = 0; i < bS; ++i)
-		std::cout << "+---";
-	std::cout << "+";
-}
-
-void PrintBoard(const BoardTYPE& board, int boardSize)
-{
-	system("cls");
-
-	for (size_t z = 0; z < DEPTH; z++)
-	{
-		int printShift = 1;
-		char letter = 'A';
-
-		std::cout << "LAYER " << z << std::endl;
-		diagShift(printShift);
-		for (letter; letter < (boardSize+'A'); ++letter)
-			std::cout << "  " << letter << " ";
-		std::cout << "\n";
-
-		for (size_t y = 0; y < boardSize; y++)
-		{
-			//print stuff
-			diagShift(printShift);
-			hBorder(boardSize);
-			std::cout << "\n";
-			printShift--;
-			diagShift(printShift);
-			std::cout << y << " ";
-
-			for (size_t x = 0; x < boardSize; x++)
-			{
-				//a switch within a switch statement, because why not? >:D //LMAO YOU THOUGHT YOU COULD SWITCH ME NONONO I MADE THE ENTIRE SWITCH STATEMENT 1 LINE MUAHAHAHAHAHAH
-				//touché, but the spacing was off >:P
-				std::cout << "\\ " << board[x + y * boardSize + z * pow(boardSize, 2)] <<' ';
-			}
-			std::cout << "\\" << std::endl;
-			printShift+=3;
-		}
-		diagShift(printShift);
-		hBorder(boardSize);
-		std::cout << std::endl << std::endl;
-	}
-}
-
-std::string getStrInput()
-{
-	std::string str = "";
-	std::getline(std::cin, str);										//grab the string with getline()
-	std::transform(str.begin(), str.end(), str.begin(), std::tolower);	//turn all chars to lowercase
-	str.erase(remove(str.begin(), str.end(), ' '), str.end());			//remove whitespace
-
-	return str;
-}
-
-//NEEDS ERROR HANDLING
-//getIntCoord
-/*
-Uses stringstream to grab 3 ints
-Returns a tuple
-Use std::tie to assign the values to 3 variables.
-*/
-std::tuple<int,int,int> getIntCoord()
-{
-	//Andrew, needs some tweaking but this is the general implementation
-	//only reads with a ' ' (space) delimiter...
-	size_t x, y, z;
-	do
-	{
-		std::string temp = "";
-		std::getline(std::cin, temp);
-		std::stringstream sstream(temp);
-		sstream >> x >> y >> z;
-		if (x >= boardSize || y >= boardSize || z >= DEPTH)
-			std::cout << "Invalid Coordinates. Enter new ones, dummy: " << std::endl;
-		else
-			break;
-	} while (true);
-
-	return std::make_tuple(x, y, z);
-}
-
-
-void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int totPieces)
-{
-	//cout formatting stuff
-	const char delim = ' ';
-	const int nameWid = 12;
-	const int quantWid = 5;
-
-	//TODO: some checking for bad input
-	int xCoord = -1;
-	int yCoord = -1;
-	int zCoord = -1;
-	int piecesPlaced = 100;
-
-	
-	while (piecesPlaced < totPieces)
-	{
-		system("cls"); //Remove this(?) if graphics get put in
-		PrintBoard(board, boardSize);
-		std::cout << "Pick a game piece: " << std::endl;
-
-		for (const auto& [name, piece] : inv)
-		{
-			//format a table output	//FIX ME
-			std::cout << std::left << std::setw(nameWid) << name << " {" << piece.amount << "} | ";
-		}
-		std::cout << std::endl;
-		/*
-		auto& itr = inv.find(getStrInput()); //grab the string input and search through the inventory
-		if (itr != inv.end())
-		{
-			//for readability's sake
-			auto& piece = itr->second;
-			if (piece.amount > 0)
-			{
-				std::cout << "[SELECTION]: " << piece.name << " (size " << piece.length << ")\n"
-					<< "[REMAINING]: " << piece.amount << std::endl;
-				//TODO: prompt comfirmation of selected piece b4 asking where to place
-				std::cout << "Where would you like to place your ship? [x y z]: ";
-
-				std::tie(xCoord, yCoord, zCoord) = getIntCoord();
-				//magic stuff, place the piece
-				//TODO: Ask which orientation (vertical|horizontal)
-				//TODO: Display placement of ship, ask for confirmation b4 modifying the board.
-				//TODO: Check board if a user's piece overlaps the selection,
-				//		Restart coord placement prompt
-
-				//SUGGESTION:
-				// Odd-sized pieces are centered corresponding to the placement coord, sorta a pivot
-				// A size 4 piece follows the same placement rules as a size 3 piece where,
-				// the non-overlapping tail-end ALWAYS points to the west/south.
-				// A size 2 piece is similar in that the tail-end will ALWAYS point to the west/south
-				// Pieces placed at the edges or corners will "bump back" this "pivot point" (plcmntCoord)
-				// so that the code won't break :')
-				
-			}
-			else
-			{
-				std::cout << "You've already placed these pieces." << std::endl;
-				system("pause"); //REMOVE WHEN GRAPHICS ARE USED
-				continue;
-			}
-			//if successful, reduce quantity and ++piecesPlaced
-			piece.amount--;
-			++piecesPlaced;
-		}
-		else
-			std::cout << "Not a valid game piece. Try again." << std::endl;
-		system("pause"); //REMOVE LATER FOR GRAPHICS/PROPER GAME LOOP
-		*/
-	}
-}
-
-
-bool shootPiece(BoardTYPE& playerBoard, BoardTYPE& enemyBoard) {
-	size_t x, y, z;
-	bool ifShot = 0;
-	while (true)
-	{
-		std::tie(x, y, z) = getIntCoord();
-		if (playerBoard[x + boardSize * y + pow(boardSize, 2) * z] != '#' && playerBoard[x + boardSize * y + pow(boardSize, 2) * z] != ' ')
-		{
-			std::cout << "Shot already made. Enter new shot: ";
-		}
-		else
-			break;
-	}
-	
-
-	if (playerBoard[x + boardSize * y + pow(boardSize, 2) * z] == '#')
-	{
-		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
-		ifShot = 1;
-	}
-	else
-		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = '_';
-
-
-	if (enemyBoard[x + boardSize * y + pow(boardSize, 2) * z] == '#')
-	{
-		playerBoard[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
-		ifShot = 1;
-	}
-	enemyBoard[x + boardSize * y + pow(boardSize, 2) * z] = '/';
-
-
-	return ifShot;
-}
-
-int checkWin(BoardTYPE& board1, BoardTYPE& board2) {
-	bool gameEnd1 = true;
-	bool gameEnd2 = true;
-	for (auto& n : board1)
-	{
-		if (n == '#')
-			gameEnd1 = false;
-	}
-	for (auto& n : board2)
-	{
-		if (n == '#')
-			gameEnd2 = false;
-	}
-
-	if (!gameEnd1 && gameEnd2)
-		return 1;
-	if (gameEnd1 && !gameEnd2)
-		return 2;
-	if (gameEnd1 && gameEnd2)
-		return 3;
-	return 0;
-	
-}
-
 /*
 Board Positions:
- 1:Player Ship
- 0:Empty Space
--1:Miss
--2:Hit
--3:Enemy Shot
+'#':Player Ship
+' ':Empty Space
+'_':Miss
+'X':Hit
+'/':Enemy Shot
 */
 
 /*
@@ -361,3 +28,267 @@ Order of making things:
 ///		   |   '-.   /     / 
 ///  _,..._|      )_-\ \_=.\
 /// `-....-'`------)))`=-'"`'"
+
+void BoardFactory::diagonalShift(int printShift)
+{
+	for (int i = 0; i < printShift; ++i)
+		std::cout << " ";
+}
+
+void BoardFactory::borderPrint()
+{
+	for (int i = 0; i < boardSize; ++i)
+		std::cout << "+---";
+	std::cout << "+";
+}
+
+void BoardFactory::getPieceInput()
+{
+	std::getline(std::cin, gamePiece);														//grab the string with getline()
+	std::transform(gamePiece.begin(), gamePiece.end(), gamePiece.begin(), std::tolower);	//turn all chars to lowercase
+	gamePiece.erase(remove(gamePiece.begin(), gamePiece.end(), ' '), gamePiece.end());		//remove whitespace	
+}
+
+void BoardFactory::getIntCord()
+{
+	size_t x, y, z;
+	while (true)
+	{
+		std::string temp = "";
+		std::getline(std::cin, temp);
+		std::stringstream sstream(temp);
+		sstream >> x >> y >> z;
+		if (x >= boardSize || y >= boardSize || z >= boardDepth)
+			std::cout << "Invalid Coordinates: " << std::endl;
+		else
+			break;
+	}
+	cordinate = std::make_tuple(x, y, z);
+}
+
+void BoardFactory::checkWin()
+{
+	bool gameEnd1 = true;
+	bool gameEnd2 = true;
+	for (auto& n : playerBoard1)
+	{
+		if (n == '#')
+			gameEnd1 = false;
+	}
+	for (auto& n : playerBoard2)
+	{
+		if (n == '#')
+			gameEnd2 = false;
+	}
+
+	if (!gameEnd1 && gameEnd2)
+		gameState = 1;
+	else if (gameEnd1 && !gameEnd2)
+		gameState = 2;
+	else if (gameEnd1 && gameEnd2)
+		gameState = 3;
+	else 
+		gameState = 0;
+}
+
+void BoardFactory::shootPiece()
+{
+	size_t x, y, z;
+	ifShot = 0;
+
+	//Determining if shot has been made
+	while (true)
+	{
+		getIntCord();
+		std::tie(x, y, z) = cordinate;
+		if (playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] != '#' && playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] != ' ')
+		{
+			std::cout << "Shot already made. Enter new shot: ";
+		}
+		else
+			break;
+	}
+
+	if (player == 1)
+	{
+		if (playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] == '#')
+		{
+			playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
+			ifShot = 1;
+		}
+		else
+			playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] = '_';
+
+		if (playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] == '#')
+		{
+			playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
+			ifShot = 1;
+		}
+		playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] = '/';
+	}
+	else
+	{
+		if (playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] == '#')
+		{
+			playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
+			ifShot = 1;
+		}
+		else
+			playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] = '_';
+
+		if (playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] == '#')
+		{
+			playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
+			ifShot = 1;
+		}
+		playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] = '/';
+	}
+	
+} //Needs fixing due to duplicate code
+
+void BoardFactory::printBoard(const std::vector<char> board)
+{
+	for (size_t z = 0; z < boardDepth; z++)
+	{
+		int printShift = 1;
+		char letter = 'A';
+
+		std::cout << "LAYER " << z << std::endl;
+		diagonalShift(printShift);
+		for (letter; letter < (boardSize + 'A'); ++letter)
+			std::cout << "  " << letter << " ";
+		std::cout << "\n";
+
+		for (size_t y = 0; y < boardSize; y++)
+		{
+			//print stuff
+			diagonalShift(printShift);
+			borderPrint();
+			std::cout << "\n";
+			printShift--;
+			diagonalShift(printShift);
+			std::cout << y << " ";
+
+			for (size_t x = 0; x < boardSize; x++)
+			{
+				//a switch within a switch statement, because why not? >:D //LMAO YOU THOUGHT YOU COULD SWITCH ME NONONO I MADE THE ENTIRE SWITCH STATEMENT 1 LINE MUAHAHAHAHAHAH
+				//touché, but the spacing was off >:P
+				std::cout << "\\ " << board[x + y * boardSize + z * pow(boardSize, 2)] << ' ';
+			}
+			std::cout << "\\" << std::endl;
+			printShift += 3;
+		}
+		diagonalShift(printShift);
+		borderPrint();
+		std::cout << std::endl << std::endl;
+	}
+}
+
+BoardFactory::BoardFactory()
+{
+	boardSize = 8;
+	boardDepth = 3;
+	player = 1;
+	gameState = 0;
+	ifShot = 0;
+	for (size_t i = 0; i < pow(boardSize, 2) * boardDepth; i++)
+	{
+		playerBoard1.push_back(' ');
+		playerBoard2.push_back('#');
+	}
+	std::cout << "Board size is: ";
+	for (int i = 0; i < 2; ++i)
+		std::cout << boardSize << 'x';
+	std::cout << boardDepth << std::endl;
+}
+
+void BoardFactory::changePlayer()
+{
+	if (player == 1)
+		player = 2;
+	else
+		player = 1;
+}
+/*
+void Battleship(int size)
+{
+	//Is currently being used by Player 1
+	//Maybe use copy constructor to make one for each player?
+	//key --> gamePiece(name|length) & quantity
+	PcsMAPTYPE inventory{ {"carrier",		{"Carrier",		5,	1}},
+							{"battleship",	{"Battleship",	4,	2}},
+							{"destroyer",	{"Destroyer",	3,	1}},
+							{"submarine",	{"Submarine",	3,	2}},
+							{"patrolboat",	{"Patrol Boat",	2,	4}} };
+*/
+
+void gameRun()
+{
+	int move;
+	BoardFactory Battleship;
+	while (0 == 0)
+	{
+		move = Battleship.player;
+		switch (move)
+		{
+		case 1:
+			Battleship.printBoard(Battleship.playerBoard1);
+			break;
+		case 2:
+			Battleship.printBoard(Battleship.playerBoard2);
+			break;
+		}
+
+		//A switch statement, cuz I know you don't like 'em >:D
+		std::cout << "Player " << move << "\n";
+		std::cout << "Where would you (" << move << ") like to shoot: [x y z] ";
+		switch (move)
+		{
+		case 1:
+			Battleship.shootPiece();
+			if (Battleship.ifShot)
+				std::cout << "Hit!\n";
+			else
+				std::cout << "Miss, loser.\n";
+			move++;
+			break;
+		case 2:
+			Battleship.shootPiece();
+			if (Battleship.ifShot)
+				std::cout << "Hit!\n";
+			else
+				std::cout << "Miss, loser.\n";
+			move--;
+			break;
+		}
+
+		//Battleship.checkWin();
+		if (Battleship.gameState == 1)
+		{
+			std::cout << "Player 1 wins!\n";
+			break;
+		}
+		if (Battleship.gameState == 2)
+		{
+			std::cout << "Player 2 wins!\n";
+			break;
+		}
+		if (Battleship.gameState == 3)
+		{
+			std::cout << "Tie!\n";
+			break;
+		}
+
+		Battleship.changePlayer();
+
+		//getline(std::cin, input);
+		//std::stringstream sstream(input);
+		//sstream >> shotX >> shotY >> shotZ;
+		//TODO: Make a translation of battleship notation (A3, B6) to coordinates..?
+		//std::tie(shotX, shotY, shotZ) = getIntCoord();
+		//board[shotX + boardSize * shotY + pow(boardSize,2) * shotZ] = -2;
+		//board[shotZ + shotY * DEPTH + shotX * boardSize * DEPTH] = -2;
+
+	}
+	system("pause");
+}

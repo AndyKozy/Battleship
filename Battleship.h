@@ -11,28 +11,29 @@
 #include <algorithm>
 #include <utility>
 
-struct gamePiece
-{
-	const std::string name;
-	const int length;
-	int amount;
+void gameRun();
+
+class BoardFactory {
+public:
+	BoardFactory();
+	void getIntCord();
+	void printBoard(const std::vector<char> board);
+	//void placePieces();
+	void shootPiece();
+	void diagonalShift(int printShift);
+	void borderPrint();
+	void getPieceInput();
+	void checkWin();
+	void changePlayer();
+	std::vector<char> playerBoard1;
+	std::vector<char> playerBoard2;
+	bool ifShot;
+	int gameState;
+	int player;
+private:
+	int boardSize;
+	int boardDepth;
+	std::string gamePiece;
+	std::tuple<int, int, int> cordinate;
+	
 };
-
-using PcKEYTYPE = std::string;
-using PcELEMTYPE = gamePiece; //piece w/ quantity
-using PcsMAPTYPE = std::map<PcKEYTYPE, PcELEMTYPE>;
-using BoardTYPE = std::vector<char>;
-
-std::string getStrInput();
-
-std::tuple<int, int, int> getIntCoord();
-
-void PlacePieces(BoardTYPE& board, const int& boardSize, PcsMAPTYPE& inv, int totPieces);
-
-void PrintBoard(const BoardTYPE& board, int);
-
-bool shootPiece(BoardTYPE& playerBoard, BoardTYPE& enemyBoard);
-
-void Battleship(int);
-
-int checkWin(BoardTYPE& board, BoardTYPE& board1);

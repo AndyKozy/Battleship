@@ -3,5 +3,5 @@
 
 TEST_CASE("Printing the board", "[Battleship]")
 {
-	Battleship(8);
+	gameRun();
 }
