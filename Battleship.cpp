@@ -32,7 +32,6 @@ Order of making things:
 using board_type = Battleship3D::board_type;
 using coord_type = Battleship3D::coord_type;
 
-
 void Battleship3D::makeBoard()
 {
 	boardSize = 8;
@@ -40,8 +39,8 @@ void Battleship3D::makeBoard()
 	ifShot = 0;
 	for (size_t i = 0; i < pow(boardSize, 2) * boardDepth; i++)
 	{
-		playerBoard1.push_back(' ');
-		playerBoard2.push_back('#');
+		playerBoard1.push_back(BBMarkerType::EMPTY);
+		playerBoard2.push_back(BBMarkerType::EMPTY);
 	}
 	std::cout << "Board size is: ";
 	for (int i = 0; i < 2; ++i)
@@ -49,7 +48,7 @@ void Battleship3D::makeBoard()
 	std::cout << boardDepth << std::endl;
 }
 
-std::string Battleship3D::getPieceName()
+std::string Battleship3D::getPlayerString()
 {
 	std::string gamePiece;
 	std::getline(std::cin, gamePiece);														//grab the string with getline()
@@ -57,7 +56,6 @@ std::string Battleship3D::getPieceName()
 	gamePiece.erase(remove(gamePiece.begin(), gamePiece.end(), ' '), gamePiece.end());		//remove whitespace
 	return gamePiece;
 }
-
 
 void Battleship3D::setCoordinates()
 {
@@ -108,14 +106,14 @@ void Battleship3D::checkShot(board_type& firstBoard, board_type& secondBoard, si
 		ifShot = true;
 	}
 	else
-		playerBoard1[position] = BBMarkerType::MISS;
+		firstBoard[position] = BBMarkerType::MISS;
 
-	if (playerBoard2[position] == BBMarkerType::PIECE)
+	if (secondBoard[position] == BBMarkerType::PIECE)
 	{
-		playerBoard1[position] = BBMarkerType::HIT;
+		firstBoard[position] = BBMarkerType::HIT;
 		ifShot = 1;
 	}
-	playerBoard2[position] = BBMarkerType::SHOT;
+	secondBoard[position] = BBMarkerType::SHOT;
 }
 
 void Battleship3D::shootPiece()
@@ -199,19 +197,167 @@ void Battleship3D::printBoard()
 	}
 }
 
-
-/*
-void Battleship(int size)
+void Battleship3D::verticalPlacePiece(int boatSize)
 {
-	//Is currently being used by Player 1
-	//Maybe use copy constructor to make one for each player?
-	//key --> gamePiece(name|length) & quantity
-	PcsMAPTYPE inventory{ {"carrier",		{"Carrier",		5,	1}},
-							{"battleship",	{"Battleship",	4,	2}},
-							{"destroyer",	{"Destroyer",	3,	1}},
-							{"submarine",	{"Submarine",	3,	2}},
-							{"patrolboat",	{"Patrol Boat",	2,	4}} };
-*/
+	int n = 0;
+	int endOfShip;
+	int outOfBoard;
+	std::cout << "Where would you like the top of you piece placed: ";
+	while (true)
+	{
+		setCoordinates();
+		endOfShip = _x + (_y + boatSize - 1) * boardSize + _z * pow(boardSize, 2);
+		outOfBoard = _x + (_z + 1) * pow(boardSize, 2);
+		
+		if (endOfShip >= outOfBoard || endOfShip >= currBoard.size())
+			std::cout << "Invalid Placement: ";
+		else
+		{
+			n = 0;
+			for (int i = 0; i < boatSize; i++)
+			{
+				if (currBoard[_x + (_y + i) * boardSize + _z * pow(boardSize, 2)] == BBMarkerType::PIECE)
+					n++;
+			}
+			if (n == 0)
+				break;
+			else
+				std::cout << "A piece is there, enter new location: ";
+		}
+	}
+	for (int i = 0; i < boatSize; i++)
+	{
+		currBoard[_x + (_y + i) * boardSize + _z * pow(boardSize, 2)] = BBMarkerType::PIECE;
+	}
+}
+
+void Battleship3D::horizontalPlacePiece(int boatSize)
+{
+	int n = 0;
+	int endOfShip;
+	int outOfBoard;
+	std::cout << "Where would you like the left of you piece placed: ";
+	while (true)
+	{
+		setCoordinates();
+		endOfShip = (_x + boatSize - 1) + _y * boardSize + _z * pow(boardSize, 2);
+		outOfBoard = (_y + 1) * boardSize + _z * pow(boardSize, 2);
+
+		if (endOfShip >= outOfBoard || endOfShip >= currBoard.size())
+			std::cout << "Invalid Placement: ";
+		else
+		{
+			n = 0;
+			for (int i = 0; i < boatSize; i++)
+			{
+				if (currBoard[(_x + i) + _y * boardSize + _z * pow(boardSize, 2)] == BBMarkerType::PIECE)
+					n++;
+			}
+			if (n == 0)
+				break;
+			else
+				std::cout << "A piece is there, enter new location: ";
+		}
+	}
+	for (int i = 0; i < boatSize; i++)
+	{
+		currBoard[(_x + i) + _y * boardSize + _z * pow(boardSize, 2)] = BBMarkerType::PIECE;
+	}
+}
+
+void Battleship3D::placePieces()
+{
+	inventory_type inventory{		{"carrier",		{"Carrier",		5,    1}},
+									{"battleship",	{"Battleship",	4,    2}},
+									{"destroyer",	{"Destroyer",	3,    1}},
+									{"submarine",	{"Submarine",	3,    2}},
+									{"patrolboat",	{"Patrol Boat",	2,    4}} };
+
+	int totPieces = 0;
+	for (const auto& [key, boat] : inventory) totPieces += boat.count;
+	
+	//cout formatting stuff
+	const char delim = ' ';
+	const int nameWid = 12;
+	const int quantWid = 5;
+
+	int piecesPlaced = 0;
+	
+	std::string orientation = "";
+	
+	while (piecesPlaced < totPieces)
+	{
+		system("cls"); //Remove this(?) if graphics get put in
+		printBoard();
+		std::cout << "Player " << currPlayer << " pick a game piece: " << std::endl;
+
+		for (const auto& [key, boat] : inventory)
+		{
+			std::cout << std::left << std::setw(nameWid) << boat.name << 'x' << boat.count << " {" << boat.size << '}' << " | ";
+		}
+		std::cout << std::endl;
+		
+		auto itr = inventory.find(getPlayerString()); //grab the string input and search through the inventory
+		if (itr != inventory.end())
+		{
+			//for readability's sake
+			auto& boat = itr->second;
+			if (boat.count > 0)
+			{
+				std::cout << "[SELECTION]: " << boat.name << " (size " << boat.size << ")\n"
+					<< "[REMAINING]: " << boat.count << std::endl;
+				//TODO: prompt comfirmation of selected piece b4 asking where to place
+				std::cout << "Would you like to place your piece vertically or horizontally: ";
+				while (true)
+				{
+					orientation = getPlayerString();
+					if (orientation == "vertically" || orientation == "vertical" || orientation == "v")
+					{
+						verticalPlacePiece(boat.size);
+						break;
+					}
+					else if (orientation == "horizontally" || orientation == "horizontal" || orientation == "h")
+					{
+						horizontalPlacePiece(boat.size);
+						break;
+					}
+					else
+					{
+						std::cout << "Invalid input: ";
+					}
+				}
+			}
+			else
+			{
+				std::cout << "You've already placed these pieces." << std::endl;
+				system("pause"); //REMOVE WHEN GRAPHICS ARE USED
+				continue;
+			}
+			//if successful, reduce quantity and ++piecesPlaced
+			boat.count--;
+			++piecesPlaced;
+		}
+		else
+		{
+			std::cout << "Not a valid game piece. Try again." << std::endl;
+			system("pause");
+		}
+			std::cout << "Not a valid game piece. Try again." << std::endl;
+	}
+}
+
+void Battleship3D::setupPieces()
+{
+	currBoard = playerBoard1;
+	placePieces();
+	playerBoard1 = currBoard;
+	changePlayer();
+	currBoard = playerBoard2;
+	placePieces();
+	playerBoard2 = currBoard;
+	changePlayer();
+	currBoard = playerBoard1;
+}
 
 void runGame()
 {
@@ -220,6 +366,8 @@ void runGame()
 	game.numOfPlayers = 2;
 	game.makeBoard();
 	game.currPlayer = 1;
+
+	game.setupPieces();
 
 	while (0 == 0)
 	{
@@ -258,7 +406,7 @@ void runGame()
 			break;
 		}
 
-		//Battleship.checkWin();
+		game.checkWin();
 		if (game.gameState == 1)
 		{
 			std::cout << "Player 1 wins!\n";
@@ -276,15 +424,6 @@ void runGame()
 		}
 
 		game.changePlayer();
-
-		//getline(std::cin, input);
-		//std::stringstream sstream(input);
-		//sstream >> shotX >> shotY >> shotZ;
-		//TODO: Make a translation of battleship notation (A3, B6) to coordinates..?
-		//std::tie(shotX, shotY, shotZ) = getIntCoord();
-		//board[shotX + boardSize * shotY + pow(boardSize,2) * shotZ] = -2;
-		//board[shotZ + shotY * DEPTH + shotX * boardSize * DEPTH] = -2;
-
 	}
 	system("pause");
 }

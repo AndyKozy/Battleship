@@ -4,7 +4,7 @@
 #include<iostream>
 #include<string>
 #include<memory>
-
+#include<utility>
 
 class Board {
 /// MEMBER TYPES
@@ -35,13 +35,6 @@ protected:
 	int whitespace;
 	int boardSize;
 	coord_type coordinates;
-};
-
-
-struct BBPiece {
-	const std::string name;
-	const size_t size;
-	int count;
 };
 
 #endif // !BOARD_H
