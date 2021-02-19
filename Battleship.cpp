@@ -46,6 +46,7 @@ void Battleship3D::makeBoard()
 	for (int i = 0; i < 2; ++i)
 		std::cout << boardSize << 'x';
 	std::cout << boardDepth << std::endl;
+	system("PAUSE");
 }
 
 //getPlayerString
@@ -279,10 +280,10 @@ bool Battleship3D::checkForPlacedPieces(const int& boatSize, const char& orienta
 		switch (orientation)
 		{
 		case 'v':
-			if (currBoard[getPosition(_x, _y + i, _z)] == BBMarkerType::PIECE) return true;
+			if (currBoard[getPosition(_x, (_y + i), _z)] == BBMarkerType::PIECE) return true;
 			break;
 		case 'h':
-			if (currBoard[getPosition(_x + i, _y, _z)] == BBMarkerType::PIECE) return true;
+			if (currBoard[getPosition((_x + i), _y, _z)] == BBMarkerType::PIECE) return true;
 			break;
 		default:
 			break; //should not run
@@ -322,14 +323,13 @@ void Battleship3D::placeOnePiece(const int &boatSize, const char &orientation)
 				//From: boatSize * ((endOfShip-outOfBoard)/boatSize) + 1)
 				auto shiftUp = (endOfShip - outOfBoard + boatSize)/boardSize + 1;
 				_y -= shiftUp;
-				pieceExists = checkForPlacedPieces(boatSize, orientation);
 			}
 			else if (orientation == 'h')
 			{
 				auto shiftLeft = endOfShip - outOfBoard + 1;
 				_x -= shiftLeft;
-				pieceExists = checkForPlacedPieces(boatSize, orientation);
 			}
+			pieceExists = checkForPlacedPieces(boatSize, orientation);
 			std::cout << "Piece placement compensated." << std::endl;
 		}
 		else
@@ -360,11 +360,11 @@ void Battleship3D::placeOnePiece(const int &boatSize, const char &orientation)
 
 board_type Battleship3D::placePieces()
 {
-	inventory_type inventory{		{"c",	{"Carrier",		5,    3}},
-									{"b",	{"Battleship",	4,    1}},
+	inventory_type inventory{		{"c",	{"Carrier",		5,    0}},
+									{"b",	{"Battleship",	4,    0}},
 									{"d",	{"Destroyer",	3,    0}},
 									{"s",	{"Submarine",	3,    0}},
-									{"p",	{"Patrol Boat",	2,    0}} };
+									{"p",	{"Patrol Boat",	2,    1}} };
 
 	int totPieces = 0;
 	for (const auto& [key, boat] : inventory) totPieces += boat.count;
@@ -386,9 +386,10 @@ board_type Battleship3D::placePieces()
 
 		std::cout << "| ";
 		for (const auto& [key, boat] : inventory)
-			std::cout << std::left << std::setw(nameWid)<< boat.name
-			<< 'x' <<boat.count
-			<< " [" << boat.size << ']' << " | ";
+			std::cout << std::left << "(" << key << ")"
+			<< boat.name
+			<< " x" << boat.count
+			<< std::right << std::setw(quantWid) << " [" << boat.size << ']' << " | ";
 		std::cout << std::endl;
 		
 		auto itr = inventory.find(getPlayerString()); //grab the string input and search through the inventory
@@ -471,7 +472,8 @@ void Battleship3D::switchBoards()
 
 void Battleship3D::runGame()
 {
-	//Battleship3D game;
+	std::cout << "Starting Battleship3D game..." << std::endl;
+
 	numOfPlayers = 2;
 	makeBoard();
 
@@ -528,5 +530,6 @@ void Battleship3D::runGame()
 		}
 		currState = BBGameState::END;
 	}
+	std::cout << "\nGame Over!" << std::endl;
 	system("pause");
 }
