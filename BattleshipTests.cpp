@@ -4,5 +4,6 @@
 
 TEST_CASE("Printing the board", "[Battleship]")
 {
-	runGame();
+	Battleship3D game;
+	game.runGame();
 }
