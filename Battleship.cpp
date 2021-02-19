@@ -159,12 +159,14 @@ void Battleship3D::shootPiece()
 void Battleship3D::printTopLabel(size_t &layer)
 {
 	whitespace = 1;
-	char letter = 'A';
+	const char STRT_CHAR = '0';
+	
+	char notationChar = STRT_CHAR;
 
 	std::cout << "LAYER " << layer << std::endl;
 	printSpaceShift(whitespace);
-	for (letter; letter < (boardSize + 'A'); ++letter)
-		std::cout << "  " << letter << " ";
+	for (notationChar; notationChar < (boardSize + STRT_CHAR); ++notationChar)
+		std::cout << "  " << notationChar << " ";
 	std::cout << "\n";
 }
 
@@ -185,7 +187,7 @@ void Battleship3D::printBoard()
 		printTopLabel(z);
 		for (size_t y = 0; y < boardSize; y++)
 		{
-			printDiagSideLabel(y+1);
+			printDiagSideLabel(y);
 			for (size_t x = 0; x < boardSize; x++)
 			{
 				//a switch within a switch statement, because why not? >:D //LMAO YOU THOUGHT YOU COULD SWITCH ME NONONO I MADE THE ENTIRE SWITCH STATEMENT 1 LINE MUAHAHAHAHAHAH
