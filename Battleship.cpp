@@ -29,44 +29,53 @@ Order of making things:
 ///  _,..._|      )_-\ \_=.\
 /// `-....-'`------)))`=-'"`'"
 
-void BoardFactory::diagonalShift(int printShift)
+using board_type = Battleship3D::board_type;
+using coord_type = Battleship3D::coord_type;
+
+
+void Battleship3D::makeBoard()
 {
-	for (int i = 0; i < printShift; ++i)
-		std::cout << " ";
+	boardSize = 8;
+	gameState = 0;
+	ifShot = 0;
+	for (size_t i = 0; i < pow(boardSize, 2) * boardDepth; i++)
+	{
+		playerBoard1.push_back(' ');
+		playerBoard2.push_back('#');
+	}
+	std::cout << "Board size is: ";
+	for (int i = 0; i < 2; ++i)
+		std::cout << boardSize << 'x';
+	std::cout << boardDepth << std::endl;
 }
 
-void BoardFactory::borderPrint()
+std::string Battleship3D::getPieceName()
 {
-	for (int i = 0; i < boardSize; ++i)
-		std::cout << "+---";
-	std::cout << "+";
-}
-
-void BoardFactory::getPieceInput()
-{
+	std::string gamePiece;
 	std::getline(std::cin, gamePiece);														//grab the string with getline()
 	std::transform(gamePiece.begin(), gamePiece.end(), gamePiece.begin(), std::tolower);	//turn all chars to lowercase
-	gamePiece.erase(remove(gamePiece.begin(), gamePiece.end(), ' '), gamePiece.end());		//remove whitespace	
+	gamePiece.erase(remove(gamePiece.begin(), gamePiece.end(), ' '), gamePiece.end());		//remove whitespace
+	return gamePiece;
 }
 
-void BoardFactory::getIntCord()
+
+void Battleship3D::setCoordinates()
 {
-	size_t x, y, z;
 	while (true)
 	{
 		std::string temp = "";
 		std::getline(std::cin, temp);
 		std::stringstream sstream(temp);
-		sstream >> x >> y >> z;
-		if (x >= boardSize || y >= boardSize || z >= boardDepth)
+		sstream >> _x >> _y >> _z;
+		if (_x >= boardSize || _y >= boardSize || _z >= boardDepth)
 			std::cout << "Invalid Coordinates: " << std::endl;
 		else
 			break;
 	}
-	cordinate = std::make_tuple(x, y, z);
+	coordinates = std::make_tuple(_x, _y, _z);
 }
 
-void BoardFactory::checkWin()
+void Battleship3D::checkWin()
 {
 	bool gameEnd1 = true;
 	bool gameEnd2 = true;
@@ -91,124 +100,106 @@ void BoardFactory::checkWin()
 		gameState = 0;
 }
 
-void BoardFactory::shootPiece()
+void Battleship3D::checkShot(board_type& firstBoard, board_type& secondBoard, size_t& position)
 {
-	size_t x, y, z;
-	ifShot = 0;
+	if (firstBoard[position] == BBMarkerType::PIECE)
+	{
+		firstBoard[position] = BBMarkerType::HIT;
+		ifShot = true;
+	}
+	else
+		playerBoard1[position] = BBMarkerType::MISS;
+
+	if (playerBoard2[position] == BBMarkerType::PIECE)
+	{
+		playerBoard1[position] = BBMarkerType::HIT;
+		ifShot = 1;
+	}
+	playerBoard2[position] = BBMarkerType::SHOT;
+}
+
+void Battleship3D::shootPiece()
+{
+	ifShot = false;
+	size_t shotCoords;
 
 	//Determining if shot has been made
 	while (true)
 	{
-		getIntCord();
-		std::tie(x, y, z) = cordinate;
-		if (playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] != '#' && playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] != ' ')
-		{
+		setCoordinates();
+		//std::tie(_x, _y, _z) = coordinates;
+		shotCoords = (_x + boardSize * _y + pow(boardSize, 2) * _z);
+
+		if (playerBoard1[shotCoords] != BBMarkerType::PIECE && 
+			playerBoard1[shotCoords] != BBMarkerType::EMPTY)
 			std::cout << "Shot already made. Enter new shot: ";
-		}
 		else
 			break;
 	}
 
-	if (player == 1)
+	switch (currPlayer)
 	{
-		if (playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] == '#')
-		{
-			playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
-			ifShot = 1;
-		}
-		else
-			playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] = '_';
-
-		if (playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] == '#')
-		{
-			playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
-			ifShot = 1;
-		}
-		playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] = '/';
-	}
-	else
-	{
-		if (playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] == '#')
-		{
-			playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
-			ifShot = 1;
-		}
-		else
-			playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] = '_';
-
-		if (playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] == '#')
-		{
-			playerBoard2[x + boardSize * y + pow(boardSize, 2) * z] = 'X';
-			ifShot = 1;
-		}
-		playerBoard1[x + boardSize * y + pow(boardSize, 2) * z] = '/';
+	case 1:
+		checkShot(playerBoard1, playerBoard2, shotCoords);
+		break;
+	case 2:
+		checkShot(playerBoard2, playerBoard1, shotCoords);
+		break;
+	default:
+		std::cout << "Shouldn't print this. Check for error." << std::endl;
+		break;
 	}
 	
-} //Needs fixing due to duplicate code
+} //Needs fixing due to duplicate code //Minor solution. see checkShot()
 
-void BoardFactory::printBoard(const std::vector<char> board)
+void Battleship3D::printTopLabel(size_t &layer)
+{
+	whitespace = 1;
+	char letter = 'A';
+
+	//TOP LABELS make into a function?
+	std::cout << "LAYER " << layer << std::endl;
+	printSpaceShift(whitespace);
+	for (letter; letter < (boardSize + 'A'); ++letter)
+		std::cout << "  " << letter << " ";
+	std::cout << "\n";
+}
+
+void Battleship3D::printDiagSideLabel(size_t& row)
+{
+	printSpaceShift(whitespace);
+	printBorder();
+	std::cout << "\n";
+	whitespace--;
+	printSpaceShift(whitespace);
+	std::cout << row << " ";
+}
+
+void Battleship3D::printBoard()
 {
 	for (size_t z = 0; z < boardDepth; z++)
 	{
-		int printShift = 1;
-		char letter = 'A';
-
-		std::cout << "LAYER " << z << std::endl;
-		diagonalShift(printShift);
-		for (letter; letter < (boardSize + 'A'); ++letter)
-			std::cout << "  " << letter << " ";
-		std::cout << "\n";
-
+		printTopLabel(z);
 		for (size_t y = 0; y < boardSize; y++)
 		{
-			//print stuff
-			diagonalShift(printShift);
-			borderPrint();
-			std::cout << "\n";
-			printShift--;
-			diagonalShift(printShift);
-			std::cout << y << " ";
-
+			printDiagSideLabel(y);
 			for (size_t x = 0; x < boardSize; x++)
 			{
 				//a switch within a switch statement, because why not? >:D //LMAO YOU THOUGHT YOU COULD SWITCH ME NONONO I MADE THE ENTIRE SWITCH STATEMENT 1 LINE MUAHAHAHAHAHAH
 				//touché, but the spacing was off >:P
-				std::cout << "\\ " << board[x + y * boardSize + z * pow(boardSize, 2)] << ' ';
+				std::cout << "\\ " << currBoard[x + y * boardSize + z * pow(boardSize, 2)] << ' ';
 			}
 			std::cout << "\\" << std::endl;
-			printShift += 3;
+			
+			whitespace += 3;
 		}
-		diagonalShift(printShift);
-		borderPrint();
+		printSpaceShift(whitespace);
+		printBorder();
 		std::cout << std::endl << std::endl;
 	}
 }
 
-BoardFactory::BoardFactory()
-{
-	boardSize = 8;
-	boardDepth = 3;
-	player = 1;
-	gameState = 0;
-	ifShot = 0;
-	for (size_t i = 0; i < pow(boardSize, 2) * boardDepth; i++)
-	{
-		playerBoard1.push_back(' ');
-		playerBoard2.push_back('#');
-	}
-	std::cout << "Board size is: ";
-	for (int i = 0; i < 2; ++i)
-		std::cout << boardSize << 'x';
-	std::cout << boardDepth << std::endl;
-}
 
-void BoardFactory::changePlayer()
-{
-	if (player == 1)
-		player = 2;
-	else
-		player = 1;
-}
 /*
 void Battleship(int size)
 {
@@ -222,22 +213,27 @@ void Battleship(int size)
 							{"patrolboat",	{"Patrol Boat",	2,	4}} };
 */
 
-void gameRun()
+void runGame()
 {
 	int move;
-	BoardFactory Battleship;
+	Battleship3D game;
+	game.numOfPlayers = 2;
+	game.makeBoard();
+	game.currPlayer = 1;
+
 	while (0 == 0)
 	{
-		move = Battleship.player;
+		move = game.currPlayer;
 		switch (move)
 		{
 		case 1:
-			Battleship.printBoard(Battleship.playerBoard1);
+			game.currBoard = game.playerBoard1;
 			break;
 		case 2:
-			Battleship.printBoard(Battleship.playerBoard2);
+			game.currBoard = game.playerBoard2;
 			break;
 		}
+		game.printBoard();
 
 		//A switch statement, cuz I know you don't like 'em >:D
 		std::cout << "Player " << move << "\n";
@@ -245,16 +241,16 @@ void gameRun()
 		switch (move)
 		{
 		case 1:
-			Battleship.shootPiece();
-			if (Battleship.ifShot)
+			game.shootPiece();
+			if (game.ifShot)
 				std::cout << "Hit!\n";
 			else
 				std::cout << "Miss, loser.\n";
 			move++;
 			break;
 		case 2:
-			Battleship.shootPiece();
-			if (Battleship.ifShot)
+			game.shootPiece();
+			if (game.ifShot)
 				std::cout << "Hit!\n";
 			else
 				std::cout << "Miss, loser.\n";
@@ -263,23 +259,23 @@ void gameRun()
 		}
 
 		//Battleship.checkWin();
-		if (Battleship.gameState == 1)
+		if (game.gameState == 1)
 		{
 			std::cout << "Player 1 wins!\n";
 			break;
 		}
-		if (Battleship.gameState == 2)
+		if (game.gameState == 2)
 		{
 			std::cout << "Player 2 wins!\n";
 			break;
 		}
-		if (Battleship.gameState == 3)
+		if (game.gameState == 3)
 		{
 			std::cout << "Tie!\n";
 			break;
 		}
 
-		Battleship.changePlayer();
+		game.changePlayer();
 
 		//getline(std::cin, input);
 		//std::stringstream sstream(input);
