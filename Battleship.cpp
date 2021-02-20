@@ -1,3 +1,29 @@
+/* battleship.cpp
+Source for Battleship class
+	A class for a battleship game with multiple boards and shared
+	Submission For Project 1
+
+Course : CS372 - Software Construction(Spring 2021)
+Instructor : Dr. Chris Hartman
+
+@author Andrew Kozak
+		Timothy Albert Kline
+@version 1.0
+
+Started: 2021-02-04
+Updated: 2021-02-19
+
+*************************************************************
+* Source code largely written by Timothy Albert Kline & Andrew Kozak.
+* The following references are indicated below.
+* Any code reproduced from another source is indicated above
+* the comment section of a function or class.
+*
+* Source references/material:
+* C++ Primer - Stanley B. Lippman (2013)
+* cppreference.com
+* cplusplus.com
+*/
 #include "Battleship.h"
 
 /*
@@ -30,18 +56,21 @@ Order of making things:
 /// `-....-'`------)))`=-'"`'"
 
 using board_type = Battleship3D::board_type;
-//using coord_type = Battleship3D::coord_type;
 
+/*makeBoard
+* This makes the two board
+*/
 void Battleship3D::makeBoard()
 {
 	boardSize = 8;
 	currState = BBGameState::START;
 	ifShot = false;
-	for (size_t i = 0; i < pow(boardSize, 2) * boardDepth; i++)
+	for (auto i = 0; i < pow(boardSize, 2) * boardDepth; i++)
 	{
 		playerBoard1.push_back(BBMarkerType::EMPTY);
 		playerBoard2.push_back(BBMarkerType::EMPTY);
 	}
+
 	std::cout << "Board size is: ";
 	for (int i = 0; i < 2; ++i)
 		std::cout << boardSize << 'x';
@@ -49,7 +78,11 @@ void Battleship3D::makeBoard()
 	system("PAUSE");
 }
 
-//getPlayerString
+///ACCESSORS
+/*getPlayerString
+* Gets input from player to a string
+* @returns gamePiece, the tranformed string
+*/
 std::string Battleship3D::getPlayerString()
 {
 	std::string gamePiece;
@@ -59,6 +92,19 @@ std::string Battleship3D::getPlayerString()
 	return gamePiece;
 }
 
+/*getPosition
+* Simple function that returns the equation result for a 1D array for a 3D index
+*/
+int Battleship3D::getPosition(size_t x, size_t y, size_t z)
+{
+	return x + boardSize * y + pow(boardSize, 2) * z;
+}
+///MUTATORS
+/*setCoordinates
+* Sets the member variable coordinates from user input
+* Handles out of bound inputs
+* Board.coordinates stores these values as well [UNUSED]
+*/
 void Battleship3D::setCoordinates()
 {
 	while (true)
@@ -72,34 +118,13 @@ void Battleship3D::setCoordinates()
 		else
 			break;
 	}
-	coordinates = std::make_tuple(_x, _y, _z);
+	//coordinates = std::make_tuple(_x, _y, _z);
 }
 
-void Battleship3D::checkWin()
-{
-	bool gameEnd1 = true;
-	bool gameEnd2 = true;
-	for (auto& n : playerBoard1)
-	{
-		if (n == BBMarkerType::PIECE)
-			gameEnd1 = false;
-	}
-	for (auto& n : playerBoard2)
-	{
-		if (n == BBMarkerType::PIECE)
-			gameEnd2 = false;
-	}
-
-	if (!gameEnd1 && gameEnd2)
-		currState = BBGameState::P1_WIN;
-	else if (gameEnd1 && !gameEnd2)
-		currState = BBGameState::P2_WIN;
-	else if (gameEnd1 && gameEnd2)
-		currState = BBGameState::TIE;
-	else 
-		currState = BBGameState::START;
-}
-
+///SHOOT BOARD FUNCTIONS
+/*checkShot
+* Checks how the coordinates of a shot affects both player boards
+*/
 void Battleship3D::checkShot(board_type& firstBoard, board_type& secondBoard, size_t& position)
 {
 	if (firstBoard[position] == BBMarkerType::PIECE)
@@ -118,11 +143,9 @@ void Battleship3D::checkShot(board_type& firstBoard, board_type& secondBoard, si
 	secondBoard[position] = BBMarkerType::SHOT;
 }
 
-int Battleship3D::getPosition(size_t x, size_t y, size_t z)
-{
-	return x + boardSize * y + pow(boardSize, 2) * z;
-}
-
+/*shootPiece
+* Shoot the board given user coordinates
+*/
 void Battleship3D::shootPiece()
 {
 	ifShot = false;
@@ -141,6 +164,7 @@ void Battleship3D::shootPiece()
 			break;
 	}
 
+	//Updates the boards
 	switch (currPlayer)
 	{
 	case 1:
@@ -153,9 +177,12 @@ void Battleship3D::shootPiece()
 		std::cout << "Shouldn't print this. Check for error." << std::endl;
 		break;
 	}
-	
-} //Needs fixing due to duplicate code //Minor solution. see checkShot()
+}
 
+///PRINT BOARD FUNCTIONS
+/*printTopLabel
+* Prints the board notation for the horizontal axis 
+*/
 void Battleship3D::printTopLabel(size_t &layer)
 {
 	whitespace = 1;
@@ -170,6 +197,9 @@ void Battleship3D::printTopLabel(size_t &layer)
 	std::cout << "\n";
 }
 
+/*printDiagSideLabel
+* Prints the board notation for the vertical (diagonalized) axis
+*/
 void Battleship3D::printDiagSideLabel(size_t row)
 {
 	printSpaceShift(whitespace);
@@ -180,6 +210,9 @@ void Battleship3D::printDiagSideLabel(size_t row)
 	std::cout << row << " ";
 }
 
+/*printBoard
+* Prints the player's board
+*/
 void Battleship3D::printBoard()
 {
 	for (size_t z = 0; z < boardDepth; z++)
@@ -204,6 +237,8 @@ void Battleship3D::printBoard()
 	}
 }
 
+//Vertical and Horizontal Placement
+//Handled by placeOnePiece()
 /*
 void Battleship3D::verticalPlacePiece(int boatSize)
 {
@@ -273,18 +308,23 @@ void Battleship3D::horizontalPlacePiece(int boatSize)
 }
 */
 
-bool Battleship3D::checkForPlacedPieces(const int& boatSize, const char& orientation)
+///PLACE PIECE FUNCTIONS
+/*checkForPlacedPiece
+* Checks if a placed piece is within the range of a new piece's size
+* @returns true if found
+*/
+bool Battleship3D::checkForPlacedPieces(const int& boatSize, const BBDirection direction)
 {
 	for (int i = 0; i < boatSize; i++)
 	{
 		//for the sake of "switching" to the correct orientation
 		//without testing each condition of an if-elseif statement
-		switch (orientation)
+		switch (direction)
 		{
-		case 'v':
+		case BBDirection::VERTICAL:
 			if (currBoard[getPosition(_x, (_y + i), _z)] == BBMarkerType::PIECE) return true;
 			break;
-		case 'h':
+		case BBDirection::HORIZONTAL:
 			if (currBoard[getPosition((_x + i), _y, _z)] == BBMarkerType::PIECE) return true;
 			break;
 		default:
@@ -294,7 +334,10 @@ bool Battleship3D::checkForPlacedPieces(const int& boatSize, const char& orienta
 	return false;
 }
 
-void Battleship3D::placeOnePiece(const int &boatSize, const char &orientation)
+/*placeOnePiece
+* Based on the orientation, a piece is placed on the board
+*/
+void Battleship3D::placeOnePiece(const int &boatSize, const BBDirection direction)
 {
 	int endOfShip = 0;
 	int outOfBoard = 0;
@@ -305,12 +348,12 @@ void Battleship3D::placeOnePiece(const int &boatSize, const char &orientation)
 	{
 		setCoordinates();
 		
-		if (orientation == 'v')
+		if (direction == BBDirection::VERTICAL)
 		{
 			endOfShip = getPosition(_x, (_y + boatSize - 1), _z);
 			outOfBoard = getPosition(_x, 0, (_z + 1));
 		}
-		else if (orientation == 'h')
+		else if (direction == BBDirection::HORIZONTAL)
 		{
 			endOfShip = getPosition((_x + boatSize - 1), _y, _z);
 			outOfBoard = getPosition(0, (_y + 1), _z);
@@ -320,23 +363,23 @@ void Battleship3D::placeOnePiece(const int &boatSize, const char &orientation)
 		{
 			//std::cout << "Invalid Placement: ";
 			//compensate
-			if (orientation == 'v')
+			if (direction == BBDirection::VERTICAL)
 			{
-				//From: boatSize * ((endOfShip-outOfBoard)/boatSize) + 1)
+				//From: [boatSize * ((endOfShip-outOfBoard)/boatSize) + 1)]/boardSize + 1
 				auto shiftUp = (endOfShip - outOfBoard + boatSize)/boardSize + 1;
 				_y -= shiftUp;
 			}
-			else if (orientation == 'h')
+			else if (direction == BBDirection::HORIZONTAL)
 			{
 				auto shiftLeft = endOfShip - outOfBoard + 1;
 				_x -= shiftLeft;
 			}
-			pieceExists = checkForPlacedPieces(boatSize, orientation);
+			pieceExists = checkForPlacedPieces(boatSize, direction);
 			std::cout << "Piece placement compensated." << std::endl;
 		}
 		else
 		{
-			pieceExists = checkForPlacedPieces(boatSize, orientation);
+			pieceExists = checkForPlacedPieces(boatSize, direction);
 		}
 		
 		if (pieceExists)
@@ -345,12 +388,12 @@ void Battleship3D::placeOnePiece(const int &boatSize, const char &orientation)
 	
 	for (int i = 0; i < boatSize; i++)
 	{
-		switch (orientation)
+		switch (direction)
 		{
-		case 'h':
+		case BBDirection::HORIZONTAL:
 			currBoard[getPosition((_x + i), _y, _z)] = BBMarkerType::PIECE;
 			break;
-		case 'v':
+		case BBDirection::VERTICAL:
 			currBoard[getPosition(_x, (_y + i), _z)] = BBMarkerType::PIECE;
 			break;
 		default:
@@ -359,21 +402,23 @@ void Battleship3D::placeOnePiece(const int &boatSize, const char &orientation)
 	}
 }
 
-
+/*placePieces
+* Updates the current player board and places 
+*/
 board_type Battleship3D::placePieces()
 {
-	inventory_type inventory{		{"c",	{"Carrier",		5,    0}},
-									{"b",	{"Battleship",	4,    0}},
-									{"d",	{"Destroyer",	3,    0}},
-									{"s",	{"Submarine",	3,    0}},
-									{"p",	{"Patrol Boat",	2,    1}} };
+	inventory_type inventory{		{"c",	{"Carrier",		5,    BBAmount::CARRIER}},
+									{"b",	{"Battleship",	4,    BBAmount::BATTLESHIP}},
+									{"d",	{"Destroyer",	3,    BBAmount::DESTROYER}},
+									{"s",	{"Submarine",	3,    BBAmount::SUBMARINE}},
+									{"p",	{"Patrol Boat",	2,    BBAmount::PATROL}} };
 
 	int totPieces = 0;
 	for (const auto& [key, boat] : inventory) totPieces += boat.count;
 	
 	//iomanip formatting stuff
-	const char delimiter = ' ';
-	const int nameWid = 12;
+	//const char delimiter = ' ';
+	//const int nameWid = 12;
 	const int quantWid = 5;
 
 	int piecesPlaced = 0;
@@ -386,6 +431,7 @@ board_type Battleship3D::placePieces()
 		printBoard();
 		std::cout << "Player " << currPlayer << " pick a game piece: " << std::endl;
 
+		//Print the inventory
 		std::cout << "| ";
 		for (const auto& [key, boat] : inventory)
 			std::cout << std::left << "(" << key << ")"
@@ -400,6 +446,7 @@ board_type Battleship3D::placePieces()
 			auto& boat = itr->second; //for readability's sake
 			if (boat.count > 0)
 			{
+				//Print selection
 				std::cout << "[SELECTION]: " << boat.name << " (size " << boat.size << ")\n"
 					<< "[REMAINING]: " << boat.count << std::endl;
 				//TODO: prompt comfirmation of selected piece b4 asking where to place
@@ -410,14 +457,14 @@ board_type Battleship3D::placePieces()
 					if (orientation == "vertically" || orientation == "vertical" || orientation == "v")
 					{
 						std::cout << "Where would you like the top";
-						placeOnePiece(boat.size, 'v');
+						placeOnePiece(boat.size, BBDirection::VERTICAL);
 						//verticalPlacePiece(boat.size);
 						break;
 					}
 					else if (orientation == "horizontally" || orientation == "horizontal" || orientation == "h")
 					{
 						std::cout << "Where would you like the left";
-						placeOnePiece(boat.size, 'h');
+						placeOnePiece(boat.size, BBDirection::HORIZONTAL);
 						//horizontalPlacePiece(boat.size);
 						break;
 					}
@@ -444,6 +491,10 @@ board_type Battleship3D::placePieces()
 	return currBoard;
 }
 
+///SETUP
+/*setupPieces
+* Prompts for the place piece functions above
+*/
 void Battleship3D::setupPieces(board_type &board)
 {
 	switchBoards();
@@ -455,6 +506,9 @@ void Battleship3D::setupPieces(board_type &board)
 	system("PAUSE");
 }
 
+/*switchBoards
+* Switches to the currPlayer's board
+*/
 void Battleship3D::switchBoards()
 {
 	switch (currPlayer)
@@ -472,6 +526,34 @@ void Battleship3D::switchBoards()
 	}
 }
 
+void Battleship3D::checkWin()
+{
+	bool gameEnd1 = true;
+	bool gameEnd2 = true;
+	for (auto& n : playerBoard1)
+	{
+		if (n == BBMarkerType::PIECE)
+			gameEnd1 = false;
+	}
+	for (auto& n : playerBoard2)
+	{
+		if (n == BBMarkerType::PIECE)
+			gameEnd2 = false;
+	}
+
+	if (!gameEnd1 && gameEnd2)
+		currState = BBGameState::P1_WIN;
+	else if (gameEnd1 && !gameEnd2)
+		currState = BBGameState::P2_WIN;
+	else if (gameEnd1 && gameEnd2)
+		currState = BBGameState::TIE;
+	else
+		currState = BBGameState::START;
+}
+
+/*runGame
+* Runs the game (state machine) loop
+*/
 void Battleship3D::runGame()
 {
 	std::cout << "Starting Battleship3D game..." << std::endl;
